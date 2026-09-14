@@ -7,6 +7,7 @@ import StudentDashboard from './pages/StudentDashboard'
 import AdminPanel from './pages/AdminPanel'
 import BookStore from './pages/BookStore'
 import ClassroomDetail from './pages/ClassroomDetail'
+import LiveClass from './pages/LiveClass'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="/bookstore" element={<BookStore />} />
       <Route path="/classroom/:id" element={<ClassroomDetail />} />
+      <Route path="/live/:id" element={<LiveClass />} />
     </Routes>
   )
 }

@@ -160,6 +160,12 @@ export default function ClassroomDetail() {
                   >
                     {enrolling ? 'Processing...' : '🎓 Enroll Now'}
                   </button>
+                  <button
+                    onClick={() => navigate(`/live/${id}`)}
+                    className="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg hover:bg-green-600 mt-3"
+                  >
+                    📹 Join Live Class
+                  </button>
                   <p className="text-xs text-gray-400 text-center mt-3">
                     Enrollment ke baad payment confirm hogi
                   </p>

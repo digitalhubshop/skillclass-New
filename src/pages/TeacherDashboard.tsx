@@ -134,6 +134,14 @@ export default function TeacherDashboard() {
                       <span>👥 {cls.seats} seats</span>
                       <span>📍 {cls.mode}</span>
                     </div>
+                    {cls.is_approved && (
+                      <button
+                        onClick={() => navigate(`/live/${cls.id}`)}
+                        className="mt-4 w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold"
+                      >
+                        📹 Start Live Class
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
