@@ -9,6 +9,17 @@ export default function StudentDashboard() {
   const [enrollments, setEnrollments] = useState<any[]>([])
   const [purchases, setPurchases] = useState<any[]>([])
   const [classrooms, setClassrooms] = useState<any[]>([])
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+
+  const CATEGORIES = [
+    'SSC Preparation', 'UPSC/IAS', 'Banking Exams', 'Railway RRB',
+    'TET/CTET', 'Police Exams', 'NEET', 'JEE/GATE', 'Defence/NDA',
+    'State PCS', 'Academic', 'Computer & Tech', 'Beauty & Makeup',
+    'Silai & Fashion', 'Digital Marketing', 'Cooking', 'Art & Craft',
+    'Business', 'Language', 'Photography', 'Agriculture', 'Healthcare',
+    'Communication & Personality', 'Jewelry Making', 'Hair & Grooming'
+  ]
 
   useEffect(() => {
     getUser()
@@ -49,6 +60,11 @@ export default function StudentDashboard() {
     setClassrooms(data || [])
   }
 
+  const filtered = classrooms.filter(cls =>
+    cls.name.toLowerCase().includes(search.toLowerCase()) &&
+    (categoryFilter === '' || cls.category === categoryFilter)
+  )
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/')
@@ -56,7 +72,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Student Dashboard</h1>
@@ -68,20 +83,18 @@ export default function StudentDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b">
+        <div className="flex gap-4 mb-8 border-b overflow-x-auto">
           {['overview', 'explore', 'my classes', 'my books'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 px-2 font-medium capitalize ${activeTab === tab ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}
+              className={`pb-3 px-2 font-medium capitalize whitespace-nowrap ${activeTab === tab ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}
             >
               {tab}
             </button>
           ))}
         </div>
 
-        {/* Overview */}
         {activeTab === 'overview' && (
           <div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -98,10 +111,24 @@ export default function StudentDashboard() {
                 </div>
               ))}
             </div>
+
+            {/* Quick Links */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: '🏛️', label: 'SSC Preparation', onClick: () => { setActiveTab('explore'); setCategoryFilter('SSC Preparation') } },
+                { icon: '🎖️', label: 'UPSC/IAS', onClick: () => { setActiveTab('explore'); setCategoryFilter('UPSC/IAS') } },
+                { icon: '🏦', label: 'Banking Exams', onClick: () => { setActiveTab('explore'); setCategoryFilter('Banking Exams') } },
+                { icon: '🚂', label: 'Railway RRB', onClick: () => { setActiveTab('explore'); setCategoryFilter('Railway RRB') } },
+              ].map(item => (
+                <button key={item.label} onClick={item.onClick} className="bg-blue-50 rounded-xl p-4 text-center hover:bg-blue-100 transition-all">
+                  <div className="text-3xl mb-2">{item.icon}</div>
+                  <p className="text-sm font-semibold text-blue-700">{item.label}</p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Explore Classes */}
         {activeTab === 'explore' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -110,14 +137,34 @@ export default function StudentDashboard() {
                 📚 Book Store
               </Link>
             </div>
-            {classrooms.length === 0 ? (
+
+            {/* Search & Filter */}
+            <div className="flex gap-4 mb-6">
+              <input
+                type="text"
+                placeholder="Class search karo..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
+              />
+              <select
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
+              >
+                <option value="">All Categories</option>
+                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {filtered.length === 0 ? (
               <div className="text-center py-20 text-gray-400">
                 <div className="text-5xl mb-4">🔍</div>
-                <p>Abhi koi classroom available nahi hai.</p>
+                <p>Koi classroom nahi mila.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {classrooms.map(cls => (
+                {filtered.map(cls => (
                   <div key={cls.id} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
                     <div className="flex justify-between items-start mb-3">
                       <span className="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded">{cls.category}</span>
@@ -142,7 +189,6 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* My Classes */}
         {activeTab === 'my classes' && (
           <div>
             <h2 className="text-xl font-bold text-gray-800 mb-6">My Enrolled Classes</h2>
@@ -163,48 +209,20 @@ export default function StudentDashboard() {
                     <div className="flex justify-between items-center mt-4">
                       <span className="text-orange-500 font-semibold">₹{enrollment.amount}</span>
                       <span className={`px-2 py-1 rounded text-xs ${enrollment.payment_status === 'paid' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
-                        {enrollment.payment_status}
+                        {enrollment.payment_status === 'paid' ? '✅ Paid' : '⏳ Payment Pending'}
                       </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* My Books */}
-        {activeTab === 'my books' && (
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-6">My Purchased Books</h2>
-            {purchases.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
-                <div className="text-5xl mb-4">📚</div>
-                <p>Abhi koi book purchase nahi ki hai।</p>
-                <Link to="/bookstore" className="mt-4 inline-block px-6 py-2 bg-orange-500 text-white rounded-lg">
-                  Book Store Dekho
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {purchases.map(purchase => (
-                  <div key={purchase.id} className="bg-white rounded-xl p-6 shadow-sm">
-                    <div className="text-4xl mb-3">📖</div>
-                    <h3 className="font-bold text-gray-800">{purchase.books?.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{purchase.books?.category}</p>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-orange-500 font-semibold">₹{purchase.amount}</span>
-                      <button className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">
-                        Download PDF
+                    {enrollment.payment_status === 'paid' && enrollment.classrooms?.id && (
+                      <button
+                        onClick={() => navigate(`/live/${enrollment.classrooms.id}`)}
+                        className="mt-3 w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold"
+                      >
+                        📹 Join Live Class
                       </button>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
         )}
-      </div>
-    </div>
-  )
-}
