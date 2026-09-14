@@ -33,6 +33,7 @@ export default function Login() {
 
     if (userData?.account_type === 'teacher') navigate('/teacher/dashboard')
     else if (userData?.account_type === 'admin') navigate('/admin')
+    else if (userData?.account_type === 'seller') navigate('/seller/dashboard')
     else navigate('/student/dashboard')
 
     setLoading(false)
