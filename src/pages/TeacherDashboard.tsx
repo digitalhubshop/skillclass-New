@@ -24,9 +24,7 @@ export default function TeacherDashboard() {
     seats: '', fee: '', language: 'Hindi', state: '', city: '', mode: 'online'
   })
 
-  useEffect(() => {
-    getUser()
-  }, [])
+  useEffect(() => { getUser() }, [])
 
   const getUser = async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -51,10 +49,8 @@ export default function TeacherDashboard() {
     e.preventDefault()
     const { data: { user: authUser } } = await supabase.auth.getUser()
     await supabase.from('classrooms').insert({
-      ...form,
-      teacher_id: authUser?.id,
-      seats: parseInt(form.seats),
-      fee: parseFloat(form.fee)
+      ...form, teacher_id: authUser?.id,
+      seats: parseInt(form.seats), fee: parseFloat(form.fee)
     })
     setShowCreateClass(false)
     getClassrooms(authUser?.id || '')
@@ -81,11 +77,8 @@ export default function TeacherDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex gap-4 mb-8 border-b">
           {['overview', 'classrooms', 'earnings', 'payout'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-3 px-2 font-medium capitalize ${activeTab === tab ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}
-            >
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`pb-3 px-2 font-medium capitalize ${activeTab === tab ? 'border-b-2 border-orange-500 text-orange-500' : 'text-gray-500'}`}>
               {tab}
             </button>
           ))}
@@ -138,10 +131,8 @@ export default function TeacherDashboard() {
                       <span>📍 {cls.mode}</span>
                     </div>
                     {cls.is_approved && (
-                      <button
-                        onClick={() => navigate(`/live/${cls.id}`)}
-                        className="mt-4 w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold"
-                      >
+                      <button onClick={() => navigate(`/live/${cls.id}`)}
+                        className="mt-4 w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold">
                         📹 Start Live Class
                       </button>
                     )}
@@ -178,9 +169,71 @@ export default function TeacherDashboard() {
               <p className="text-sm text-gray-600">Available Balance</p>
               <p className="text-3xl font-bold text-orange-500">₹{wallet?.available_balance || 0}</p>
             </div>
-            <form className="space-y-4">
+            <div className="space-y-4">
               <select className="w-full px-4 py-3 border border-gray-200 rounded-lg">
                 <option value="upi">UPI</option>
                 <option value="bank">Bank Transfer</option>
               </select>
-              <input type="text"
+              <input type="text" placeholder="UPI ID ya Bank Account Number" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+              <input type="text" placeholder="IFSC Code" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+              <input type="number" placeholder="Amount (₹)" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+              <button className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
+                Payout Request Karo
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showCreateClass && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">New Classroom Banao</h2>
+              <button onClick={() => setShowCreateClass(false)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            <form onSubmit={handleCreateClass} className="space-y-4">
+              <input required placeholder="Classroom Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+              <select required value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full px-4 py-3 border rounded-lg">
+                <option value="">Category Select Karo</option>
+                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+              <textarea required placeholder="Description" value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full px-4 py-3 border rounded-lg" rows={3} />
+              <textarea required placeholder="Students Kya Seekhenge?" value={form.what_will_learn} onChange={e => setForm({...form, what_will_learn: e.target.value})} className="w-full px-4 py-3 border rounded-lg" rows={2} />
+              <div className="grid grid-cols-2 gap-4">
+                <input required placeholder="Duration (e.g. 3 months)" value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input required placeholder="Class Days (e.g. Mon, Wed)" value={form.class_days} onChange={e => setForm({...form, class_days: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input required type="date" value={form.start_date} onChange={e => setForm({...form, start_date: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input required type="time" value={form.start_time} onChange={e => setForm({...form, start_time: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input required type="number" placeholder="Total Seats" value={form.seats} onChange={e => setForm({...form, seats: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input required type="number" placeholder="Fee (₹)" value={form.fee} onChange={e => setForm({...form, fee: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <select value={form.language} onChange={e => setForm({...form, language: e.target.value})} className="w-full px-4 py-3 border rounded-lg">
+                  <option>Hindi</option>
+                  <option>English</option>
+                  <option>Hindi + English</option>
+                </select>
+                <select value={form.mode} onChange={e => setForm({...form, mode: e.target.value})} className="w-full px-4 py-3 border rounded-lg">
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input placeholder="State" value={form.state} onChange={e => setForm({...form, state: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input placeholder="City" value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+              </div>
+              <button type="submit" className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
+                Classroom Create Karo
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
