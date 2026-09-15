@@ -11,6 +11,14 @@ const CATEGORIES = [
   'Communication & Personality', 'Jewelry Making', 'Hair & Grooming'
 ]
 
+const LANGUAGES = [
+  'Hindi', 'English', 'Hindi + English',
+  'Bengali', 'Telugu', 'Tamil', 'Marathi', 'Gujarati',
+  'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi',
+  'Assamese', 'Maithili', 'Sanskrit', 'Konkani', 'Manipuri',
+  'Nepali', 'Sindhi', 'Dogri', 'Kashmiri', 'Bodo', 'Santali'
+]
+
 export default function BookStore() {
   const [books, setBooks] = useState<any[]>([])
   const [search, setSearch] = useState('')
@@ -70,6 +78,7 @@ export default function BookStore() {
       <div className="bg-gradient-to-r from-orange-400 to-orange-600 py-10 text-center text-white">
         <h1 className="text-3xl font-bold mb-2">📚 SkillClass Book Store</h1>
         <p className="text-orange-100">Government Exams, Skills aur bahut kuch — PDF Books ek jagah!</p>
+        <p className="text-orange-200 text-sm mt-1">🇮🇳 All India — Sabhi Bhasha mein</p>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -87,7 +96,7 @@ export default function BookStore() {
             onChange={e => setCategory(e.target.value)}
             className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
           >
-            <option value="">All Categories</option>
+            <option value="">🗂️ All Categories</option>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
           <select
@@ -95,27 +104,25 @@ export default function BookStore() {
             onChange={e => setLanguage(e.target.value)}
             className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
           >
-            <option value="">All Languages</option>
-            <option>Hindi</option>
-            <option>English</option>
-            <option>Hindi + English</option>
+            <option value="">🇮🇳 All Languages</option>
+            {LANGUAGES.map(l => <option key={l}>{l}</option>)}
           </select>
         </div>
 
         {/* Category Quick Links */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
           {[
-            { icon: '🏛️', name: 'SSC' },
-            { icon: '🎖️', name: 'UPSC' },
-            { icon: '🏦', name: 'Banking' },
-            { icon: '🚂', name: 'Railway' },
-            { icon: '🚔', name: 'Police' },
-            { icon: '🎓', name: 'TET/CTET' },
+            { icon: '🏛️', name: 'SSC', cat: 'SSC Preparation' },
+            { icon: '🎖️', name: 'UPSC', cat: 'UPSC/IAS' },
+            { icon: '🏦', name: 'Banking', cat: 'Banking Exams' },
+            { icon: '🚂', name: 'Railway', cat: 'Railway RRB' },
+            { icon: '🚔', name: 'Police', cat: 'Police Exams' },
+            { icon: '🎓', name: 'TET/CTET', cat: 'TET/CTET' },
           ].map(cat => (
             <button
               key={cat.name}
-              onClick={() => setCategory(cat.name === 'SSC' ? 'SSC Preparation' : cat.name === 'UPSC' ? 'UPSC/IAS' : cat.name === 'Banking' ? 'Banking Exams' : cat.name === 'Railway' ? 'Railway RRB' : cat.name === 'Police' ? 'Police Exams' : 'TET/CTET')}
-              className="bg-white rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-all hover:bg-orange-50"
+              onClick={() => setCategory(cat.cat)}
+              className={`bg-white rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-all hover:bg-orange-50 ${category === cat.cat ? 'border-2 border-orange-500' : ''}`}
             >
               <div className="text-2xl mb-1">{cat.icon}</div>
               <p className="text-xs font-semibold text-gray-700">{cat.name}</p>
@@ -123,11 +130,37 @@ export default function BookStore() {
           ))}
         </div>
 
+        {/* Active Filters */}
+        {(category || language) && (
+          <div className="flex gap-2 mb-6 flex-wrap">
+            {category && (
+              <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm flex items-center gap-2">
+                {category}
+                <button onClick={() => setCategory('')} className="font-bold">×</button>
+              </span>
+            )}
+            {language && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm flex items-center gap-2">
+                {language}
+                <button onClick={() => setLanguage('')} className="font-bold">×</button>
+              </span>
+            )}
+            <button onClick={() => { setCategory(''); setLanguage('') }} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+              Clear All
+            </button>
+          </div>
+        )}
+
         {/* Books Grid */}
         {filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <div className="text-5xl mb-4">📚</div>
             <p>Abhi koi book available nahi hai.</p>
+            {(category || language) && (
+              <button onClick={() => { setCategory(''); setLanguage('') }} className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg">
+                Sab Books Dekho
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -163,7 +196,8 @@ export default function BookStore() {
       <footer className="bg-gray-800 text-white py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-xl font-bold text-orange-400 mb-2">🎓 SkillClass Book Store</p>
-          <p className="text-gray-400 text-sm">© 2026 SkillClass. All rights reserved.</p>
+          <p className="text-gray-400 text-sm">🇮🇳 All India — Sabhi Bhasha mein</p>
+          <p className="text-gray-500 text-sm mt-2">© 2026 SkillClass. All rights reserved.</p>
         </div>
       </footer>
     </div>
