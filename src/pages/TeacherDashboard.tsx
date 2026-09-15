@@ -17,7 +17,18 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [classrooms, setClassrooms] = useState<any[]>([])
   const [wallet, setWallet] = useState<any>(null)
+  const [payouts, setPayouts] = useState<any[]>([])
   const [showCreateClass, setShowCreateClass] = useState(false)
+  const [payoutForm, setPayoutForm] = useState({
+    method: 'upi',
+    upi_id: '',
+    bank_account: '',
+    ifsc: '',
+    bank_name: '',
+    account_holder: '',
+    amount: '',
+    notes: '',
+  })
   const [form, setForm] = useState({
     name: '', category: '', description: '', what_will_learn: '',
     duration: '', class_days: '', start_date: '', start_time: '',
@@ -33,6 +44,7 @@ export default function TeacherDashboard() {
     setUser(data)
     getClassrooms(authUser.id)
     getWallet(authUser.id)
+    getPayouts(authUser.id)
   }
 
   const getClassrooms = async (id: string) => {
@@ -45,6 +57,11 @@ export default function TeacherDashboard() {
     setWallet(data)
   }
 
+  const getPayouts = async (id: string) => {
+    const { data } = await supabase.from('payout_requests').select('*').eq('user_id', id).order('created_at', { ascending: false })
+    setPayouts(data || [])
+  }
+
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault()
     const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -55,6 +72,33 @@ export default function TeacherDashboard() {
     setShowCreateClass(false)
     getClassrooms(authUser?.id || '')
     alert('Classroom create ho gaya! Admin approval pending.')
+  }
+
+  const handlePayoutRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+
+    if (parseFloat(payoutForm.amount) > (wallet?.available_balance || 0)) {
+      alert('Available balance se zyada amount request nahi kar sakte!')
+      return
+    }
+
+    await supabase.from('payout_requests').insert({
+      user_id: authUser?.id,
+      amount: parseFloat(payoutForm.amount),
+      method: payoutForm.method,
+      upi_id: payoutForm.upi_id,
+      bank_account: payoutForm.bank_account,
+      ifsc: payoutForm.ifsc,
+      bank_name: payoutForm.bank_name,
+      account_holder: payoutForm.account_holder,
+      notes: payoutForm.notes,
+      status: 'pending',
+    })
+
+    alert('Payout request submit ho gayi! Admin 1-3 din mein process karega.')
+    getPayouts(authUser?.id || '')
+    setPayoutForm({ method: 'upi', upi_id: '', bank_account: '', ifsc: '', bank_name: '', account_holder: '', amount: '', notes: '' })
   }
 
   const handleLogout = async () => {
@@ -146,15 +190,15 @@ export default function TeacherDashboard() {
         {activeTab === 'earnings' && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Earnings</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { label: 'Total Earned', value: wallet?.total_earned || 0 },
-                { label: 'Available Balance', value: wallet?.available_balance || 0 },
-                { label: 'Pending Balance', value: wallet?.pending_balance || 0 },
-                { label: 'Total Withdrawn', value: wallet?.total_withdrawn || 0 },
+                { label: 'Total Earned', value: wallet?.total_earned || 0, color: 'text-green-500' },
+                { label: 'Available Balance', value: wallet?.available_balance || 0, color: 'text-orange-500' },
+                { label: 'Pending Balance', value: wallet?.pending_balance || 0, color: 'text-yellow-500' },
+                { label: 'Total Withdrawn', value: wallet?.total_withdrawn || 0, color: 'text-blue-500' },
               ].map(item => (
-                <div key={item.label} className="border rounded-xl p-4">
-                  <div className="text-2xl font-bold text-orange-500">₹{item.value}</div>
+                <div key={item.label} className="border rounded-xl p-4 text-center">
+                  <div className={`text-2xl font-bold ${item.color}`}>₹{item.value}</div>
                   <div className="text-sm text-gray-500 mt-1">{item.label}</div>
                 </div>
               ))}
@@ -163,23 +207,119 @@ export default function TeacherDashboard() {
         )}
 
         {activeTab === 'payout' && (
-          <div className="bg-white rounded-xl p-8 shadow-sm max-w-lg">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Payout Request</h2>
-            <div className="bg-orange-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600">Available Balance</p>
-              <p className="text-3xl font-bold text-orange-500">₹{wallet?.available_balance || 0}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Payout Request Form */}
+            <div className="bg-white rounded-xl p-8 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-800 mb-2">💸 Payout Request</h2>
+              <div className="bg-orange-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600">Available Balance</p>
+                <p className="text-3xl font-bold text-orange-500">₹{wallet?.available_balance || 0}</p>
+              </div>
+
+              <form onSubmit={handlePayoutRequest} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                  <select value={payoutForm.method} onChange={e => setPayoutForm({...payoutForm, method: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg">
+                    <option value="upi">📱 UPI</option>
+                    <option value="bank">🏦 Bank Transfer</option>
+                  </select>
+                </div>
+
+                {payoutForm.method === 'upi' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
+                    <input type="text" required placeholder="yourname@paytm / @ybl / @okicici"
+                      value={payoutForm.upi_id} onChange={e => setPayoutForm({...payoutForm, upi_id: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                  </div>
+                )}
+
+                {payoutForm.method === 'bank' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder Name</label>
+                      <input type="text" required placeholder="Apna naam"
+                        value={payoutForm.account_holder} onChange={e => setPayoutForm({...payoutForm, account_holder: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account Number</label>
+                      <input type="text" required placeholder="Account number"
+                        value={payoutForm.bank_account} onChange={e => setPayoutForm({...payoutForm, bank_account: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
+                      <input type="text" required placeholder="IFSC Code"
+                        value={payoutForm.ifsc} onChange={e => setPayoutForm({...payoutForm, ifsc: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                      <input type="text" required placeholder="Bank ka naam"
+                        value={payoutForm.bank_name} onChange={e => setPayoutForm({...payoutForm, bank_name: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                  <input type="number" required placeholder="Kitna chahiye?"
+                    max={wallet?.available_balance || 0}
+                    value={payoutForm.amount} onChange={e => setPayoutForm({...payoutForm, amount: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                  <p className="text-xs text-gray-400 mt-1">Maximum: ₹{wallet?.available_balance || 0}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                  <textarea placeholder="Koi aur information..."
+                    value={payoutForm.notes} onChange={e => setPayoutForm({...payoutForm, notes: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg" rows={2} />
+                </div>
+
+                <button type="submit" className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
+                  💸 Payout Request Karo
+                </button>
+              </form>
             </div>
-            <div className="space-y-4">
-              <select className="w-full px-4 py-3 border border-gray-200 rounded-lg">
-                <option value="upi">UPI</option>
-                <option value="bank">Bank Transfer</option>
-              </select>
-              <input type="text" placeholder="UPI ID ya Bank Account Number" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-              <input type="text" placeholder="IFSC Code" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-              <input type="number" placeholder="Amount (₹)" className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-              <button className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
-                Payout Request Karo
-              </button>
+
+            {/* Payout History */}
+            <div className="bg-white rounded-xl p-8 shadow-sm">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">📋 Payout History</h2>
+              {payouts.length === 0 ? (
+                <div className="text-center py-10 text-gray-400">
+                  <div className="text-4xl mb-3">💸</div>
+                  <p>Abhi koi payout request nahi hai.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {payouts.map(payout => (
+                    <div key={payout.id} className="border rounded-xl p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-gray-800">₹{payout.amount}</p>
+                          <p className="text-sm text-gray-500 uppercase">{payout.method}</p>
+                          <p className="text-xs text-gray-400">{new Date(payout.created_at).toLocaleDateString('hi-IN')}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          payout.status === 'paid' ? 'bg-green-100 text-green-600' :
+                          payout.status === 'rejected' ? 'bg-red-100 text-red-600' :
+                          payout.status === 'processing' ? 'bg-blue-100 text-blue-600' :
+                          'bg-yellow-100 text-yellow-600'
+                        }`}>
+                          {payout.status === 'paid' ? '✅ Paid' :
+                           payout.status === 'rejected' ? '❌ Rejected' :
+                           payout.status === 'processing' ? '⏳ Processing' :
+                           '🕐 Pending'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
