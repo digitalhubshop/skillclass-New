@@ -55,22 +55,20 @@ export default function Payment() {
 
     setPaying(true)
     const amount = item?.fee || item?.price
-    const platformCommission = amount * 0.10
-    const teacherAmount = amount - platformCommission
+    const platformCommission = type === 'classroom' ? amount * 0.10 : amount * 0.02
+    const receiverAmount = amount - platformCommission
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: amount * 100, // paise mein
+      amount: amount * 100,
       currency: 'INR',
       name: 'SkillClass',
       description: item?.name || item?.title,
       image: '/favicon.svg',
       handler: async (response: any) => {
-        // Payment successful
         const { data: { user: authUser } } = await supabase.auth.getUser()
 
         if (type === 'classroom') {
-          // Enrollment create karo
           await supabase.from('enrollments').insert({
             student_id: authUser?.id,
             classroom_id: id,
@@ -78,30 +76,25 @@ export default function Payment() {
             payment_status: 'paid',
           })
 
-          // Teacher wallet update karo
           const { data: existingWallet } = await supabase
-            .from('wallets')
-            .select('*')
-            .eq('user_id', item.teacher_id)
-            .single()
+            .from('wallets').select('*').eq('user_id', item.teacher_id).single()
 
           if (existingWallet) {
             await supabase.from('wallets').update({
-              total_earned: (existingWallet.total_earned || 0) + teacherAmount,
-              available_balance: (existingWallet.available_balance || 0) + teacherAmount,
+              total_earned: (existingWallet.total_earned || 0) + receiverAmount,
+              available_balance: (existingWallet.available_balance || 0) + receiverAmount,
             }).eq('user_id', item.teacher_id)
           } else {
             await supabase.from('wallets').insert({
               user_id: item.teacher_id,
-              total_earned: teacherAmount,
-              available_balance: teacherAmount,
+              total_earned: receiverAmount,
+              available_balance: receiverAmount,
             })
           }
         } else if (type === 'book') {
           const bookCommission = amount * 0.02
           const sellerAmount = amount - bookCommission
 
-          // Book purchase create karo
           await supabase.from('book_purchases').insert({
             student_id: authUser?.id,
             book_id: id,
@@ -110,12 +103,8 @@ export default function Payment() {
             seller_amount: sellerAmount,
           })
 
-          // Seller wallet update karo
           const { data: existingWallet } = await supabase
-            .from('wallets')
-            .select('*')
-            .eq('user_id', item.seller_id)
-            .single()
+            .from('wallets').select('*').eq('user_id', item.seller_id).single()
 
           if (existingWallet) {
             await supabase.from('wallets').update({
@@ -131,7 +120,6 @@ export default function Payment() {
           }
         }
 
-        // Payment record save karo
         await supabase.from('payments').insert({
           student_id: authUser?.id,
           amount: amount,
@@ -183,7 +171,6 @@ export default function Payment() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-10">
-        {/* Order Summary */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">📋 Order Summary</h2>
           <div className="p-4 bg-orange-50 rounded-xl mb-4">
@@ -192,7 +179,6 @@ export default function Payment() {
               {type === 'classroom' ? `👨‍🏫 ${item?.users?.full_name}` : `✍️ ${item?.author}`}
             </p>
           </div>
-
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Amount</span>
@@ -213,7 +199,6 @@ export default function Payment() {
           </div>
         </div>
 
-        {/* Payment Options */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">💳 Payment Options</h2>
           <div className="grid grid-cols-3 gap-3 mb-4">
@@ -231,7 +216,6 @@ export default function Payment() {
           <p className="text-xs text-gray-400 text-center">Razorpay secure payment — UPI, Card, Net Banking, Wallet sab accept hota hai</p>
         </div>
 
-        {/* Pay Button */}
         <button
           onClick={handlePayment}
           disabled={paying}
@@ -243,12 +227,6 @@ export default function Payment() {
         <div className="mt-4 p-4 bg-green-50 rounded-xl">
           <p className="text-sm text-green-700 text-center">
             🔒 100% Secure Payment — Powered by Razorpay
-          </p>
-        </div>
-
-        <div className="mt-4 p-4 bg-yellow-50 rounded-xl">
-          <p className="text-sm text-yellow-700">
-            ⚠️ <strong>Note:</strong> Abhi Test Mode mein hai — real paisa nahi katega। Test card use karo: <strong>4111 1111 1111 1111</strong>
           </p>
         </div>
       </div>
