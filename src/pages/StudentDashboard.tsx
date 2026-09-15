@@ -184,10 +184,16 @@ export default function StudentDashboard() {
                       </span>
                     </div>
                     {enrollment.payment_status === 'paid' && enrollment.classrooms?.id && (
-                      <button onClick={() => navigate(`/live/${enrollment.classrooms.id}`)}
-                        className="mt-3 w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold">
-                        📹 Join Live Class
-                      </button>
+                      <div className="mt-3 space-y-2">
+                        <button onClick={() => navigate(`/live/${enrollment.classrooms.id}`)}
+                          className="w-full py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-semibold">
+                          📹 Join Live Class
+                        </button>
+                        <button onClick={() => navigate(`/review/${enrollment.classrooms.id}`)}
+                          className="w-full py-2 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 font-semibold">
+                          ⭐ Review Do
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

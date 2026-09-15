@@ -10,6 +10,7 @@ import BookStore from './pages/BookStore'
 import ClassroomDetail from './pages/ClassroomDetail'
 import LiveClass from './pages/LiveClass'
 import Payment from './pages/Payment'
+import Review from './pages/Review'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/classroom/:id" element={<ClassroomDetail />} />
       <Route path="/live/:id" element={<LiveClass />} />
       <Route path="/payment/:type/:id" element={<Payment />} />
+      <Route path="/review/:classroomId" element={<Review />} />
     </Routes>
   )
 }
