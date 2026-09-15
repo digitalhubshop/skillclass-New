@@ -8,7 +8,6 @@ export default function ClassroomDetail() {
   const [classroom, setClassroom] = useState<any>(null)
   const [teacher, setTeacher] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [enrolling, setEnrolling] = useState(false)
 
   useEffect(() => {
     getClassroom()
@@ -28,17 +27,7 @@ export default function ClassroomDetail() {
   const handleEnroll = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { navigate('/login'); return }
-
-    setEnrolling(true)
-    await supabase.from('enrollments').insert({
-      student_id: user.id,
-      classroom_id: id,
-      amount: classroom.fee,
-      payment_status: 'pending',
-    })
-    setEnrolling(false)
-    alert('Enrollment successful! Payment pending hai.')
-    navigate('/student/dashboard')
+    navigate(`/payment/classroom/${id}`)
   }
 
   if (loading) return (
@@ -55,7 +44,6 @@ export default function ClassroomDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-orange-500">🎓 SkillClass</Link>
@@ -67,7 +55,6 @@ export default function ClassroomDetail() {
 
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {/* Top Banner */}
           <div className="bg-gradient-to-r from-orange-400 to-orange-600 p-8 text-white">
             <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm mb-4 inline-block">
               {classroom.category}
@@ -78,9 +65,7 @@ export default function ClassroomDetail() {
 
           <div className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Main Content */}
               <div className="md:col-span-2">
-                {/* Teacher Info */}
                 <div className="flex items-center gap-4 mb-6 p-4 bg-orange-50 rounded-xl">
                   <div className="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center text-2xl">
                     👨‍🏫
@@ -91,13 +76,11 @@ export default function ClassroomDetail() {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div className="mb-6">
                   <h2 className="text-lg font-bold text-gray-800 mb-3">Class Description</h2>
                   <p className="text-gray-600">{classroom.description}</p>
                 </div>
 
-                {/* What you'll learn */}
                 {classroom.what_will_learn && (
                   <div className="mb-6">
                     <h2 className="text-lg font-bold text-gray-800 mb-3">✅ Aap Kya Seekhenge?</h2>
@@ -105,31 +88,24 @@ export default function ClassroomDetail() {
                   </div>
                 )}
 
-                {/* Schedule */}
                 <div className="mb-6">
                   <h2 className="text-lg font-bold text-gray-800 mb-3">📅 Schedule</h2>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Duration</p>
-                      <p className="font-semibold text-gray-800">{classroom.duration}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Class Days</p>
-                      <p className="font-semibold text-gray-800">{classroom.class_days}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Start Date</p>
-                      <p className="font-semibold text-gray-800">{classroom.start_date}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Start Time</p>
-                      <p className="font-semibold text-gray-800">{classroom.start_time}</p>
-                    </div>
+                    {[
+                      { label: 'Duration', value: classroom.duration },
+                      { label: 'Class Days', value: classroom.class_days },
+                      { label: 'Start Date', value: classroom.start_date },
+                      { label: 'Start Time', value: classroom.start_time },
+                    ].map(item => (
+                      <div key={item.label} className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500">{item.label}</p>
+                        <p className="font-semibold text-gray-800">{item.value}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Sidebar */}
               <div>
                 <div className="bg-orange-50 rounded-xl p-6 sticky top-6">
                   <div className="text-4xl font-bold text-orange-500 mb-2">₹{classroom.fee}</div>
@@ -155,10 +131,9 @@ export default function ClassroomDetail() {
                   </div>
                   <button
                     onClick={handleEnroll}
-                    disabled={enrolling}
-                    className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600 disabled:opacity-50"
+                    className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600"
                   >
-                    {enrolling ? 'Processing...' : '🎓 Enroll Now'}
+                    🎓 Enroll Now — Pay Karo
                   </button>
                   <button
                     onClick={() => navigate(`/live/${id}`)}
@@ -167,7 +142,7 @@ export default function ClassroomDetail() {
                     📹 Join Live Class
                   </button>
                   <p className="text-xs text-gray-400 text-center mt-3">
-                    Enrollment ke baad payment confirm hogi
+                    UPI / Bank Transfer se payment karo
                   </p>
                 </div>
               </div>
