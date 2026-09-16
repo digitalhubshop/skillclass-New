@@ -20,14 +20,8 @@ export default function TeacherDashboard() {
   const [payouts, setPayouts] = useState<any[]>([])
   const [showCreateClass, setShowCreateClass] = useState(false)
   const [payoutForm, setPayoutForm] = useState({
-    method: 'upi',
-    upi_id: '',
-    bank_account: '',
-    ifsc: '',
-    bank_name: '',
-    account_holder: '',
-    amount: '',
-    notes: '',
+    method: 'upi', upi_id: '', bank_account: '', ifsc: '',
+    bank_name: '', account_holder: '', amount: '', notes: '',
   })
   const [form, setForm] = useState({
     name: '', category: '', description: '', what_will_learn: '',
@@ -77,12 +71,10 @@ export default function TeacherDashboard() {
   const handlePayoutRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     const { data: { user: authUser } } = await supabase.auth.getUser()
-
     if (parseFloat(payoutForm.amount) > (wallet?.available_balance || 0)) {
       alert('Available balance se zyada amount request nahi kar sakte!')
       return
     }
-
     await supabase.from('payout_requests').insert({
       user_id: authUser?.id,
       amount: parseFloat(payoutForm.amount),
@@ -95,7 +87,6 @@ export default function TeacherDashboard() {
       notes: payoutForm.notes,
       status: 'pending',
     })
-
     alert('Payout request submit ho gayi! Admin 1-3 din mein process karega.')
     getPayouts(authUser?.id || '')
     setPayoutForm({ method: 'upi', upi_id: '', bank_account: '', ifsc: '', bank_name: '', account_holder: '', amount: '', notes: '' })
@@ -111,8 +102,11 @@ export default function TeacherDashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Teacher Dashboard</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-gray-600">👋 {user?.full_name}</span>
+            <button onClick={() => navigate('/profile')} className="px-4 py-2 text-orange-500 border border-orange-200 rounded-lg hover:bg-orange-50">
+              👤 Profile
+            </button>
             <button onClick={handleLogout} className="px-4 py-2 text-red-500 border border-red-200 rounded-lg hover:bg-red-50">Logout</button>
           </div>
         </div>
@@ -208,14 +202,12 @@ export default function TeacherDashboard() {
 
         {activeTab === 'payout' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Payout Request Form */}
             <div className="bg-white rounded-xl p-8 shadow-sm">
               <h2 className="text-xl font-bold text-gray-800 mb-2">💸 Payout Request</h2>
               <div className="bg-orange-50 rounded-lg p-4 mb-6">
                 <p className="text-sm text-gray-600">Available Balance</p>
                 <p className="text-3xl font-bold text-orange-500">₹{wallet?.available_balance || 0}</p>
               </div>
-
               <form onSubmit={handlePayoutRequest} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
@@ -225,7 +217,6 @@ export default function TeacherDashboard() {
                     <option value="bank">🏦 Bank Transfer</option>
                   </select>
                 </div>
-
                 {payoutForm.method === 'upi' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
@@ -234,7 +225,6 @@ export default function TeacherDashboard() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   </div>
                 )}
-
                 {payoutForm.method === 'bank' && (
                   <>
                     <div>
@@ -263,7 +253,6 @@ export default function TeacherDashboard() {
                     </div>
                   </>
                 )}
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
                   <input type="number" required placeholder="Kitna chahiye?"
@@ -272,21 +261,18 @@ export default function TeacherDashboard() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   <p className="text-xs text-gray-400 mt-1">Maximum: ₹{wallet?.available_balance || 0}</p>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
                   <textarea placeholder="Koi aur information..."
                     value={payoutForm.notes} onChange={e => setPayoutForm({...payoutForm, notes: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg" rows={2} />
                 </div>
-
                 <button type="submit" className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
                   💸 Payout Request Karo
                 </button>
               </form>
             </div>
 
-            {/* Payout History */}
             <div className="bg-white rounded-xl p-8 shadow-sm">
               <h2 className="text-xl font-bold text-gray-800 mb-6">📋 Payout History</h2>
               {payouts.length === 0 ? (
