@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 
 const CATEGORIES = [
@@ -20,6 +20,7 @@ const LANGUAGES = [
 ]
 
 export default function BookStore() {
+  const navigate = useNavigate()
   const [books, setBooks] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
@@ -45,20 +46,12 @@ export default function BookStore() {
 
   const handlePurchase = async (book: any) => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { alert('Pehle login karo!'); return }
-
-    const commission = book.price * 0.02
-    const sellerAmount = book.price - commission
-
-    await supabase.from('book_purchases').insert({
-      student_id: user.id,
-      book_id: book.id,
-      amount: book.price,
-      commission,
-      seller_amount: sellerAmount,
-    })
-
-    alert('Book purchase successful! My Books mein dekho.')
+    if (!user) {
+      alert('Pehle login karo!')
+      navigate('/login')
+      return
+    }
+    navigate(`/payment/book/${book.id}`)
   }
 
   return (
@@ -91,19 +84,13 @@ export default function BookStore() {
             onChange={e => setSearch(e.target.value)}
             className="flex-1 min-w-48 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
           />
-          <select
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
-          >
+          <select value={category} onChange={e => setCategory(e.target.value)}
+            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400">
             <option value="">🗂️ All Categories</option>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
-          <select
-            value={language}
-            onChange={e => setLanguage(e.target.value)}
-            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
-          >
+          <select value={language} onChange={e => setLanguage(e.target.value)}
+            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400">
             <option value="">🇮🇳 All Languages</option>
             {LANGUAGES.map(l => <option key={l}>{l}</option>)}
           </select>
@@ -119,11 +106,8 @@ export default function BookStore() {
             { icon: '🚔', name: 'Police', cat: 'Police Exams' },
             { icon: '🎓', name: 'TET/CTET', cat: 'TET/CTET' },
           ].map(cat => (
-            <button
-              key={cat.name}
-              onClick={() => setCategory(cat.cat)}
-              className={`bg-white rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-all hover:bg-orange-50 ${category === cat.cat ? 'border-2 border-orange-500' : ''}`}
-            >
+            <button key={cat.name} onClick={() => setCategory(cat.cat)}
+              className={`bg-white rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-all hover:bg-orange-50 ${category === cat.cat ? 'border-2 border-orange-500' : ''}`}>
               <div className="text-2xl mb-1">{cat.icon}</div>
               <p className="text-xs font-semibold text-gray-700">{cat.name}</p>
             </button>
@@ -145,7 +129,8 @@ export default function BookStore() {
                 <button onClick={() => setLanguage('')} className="font-bold">×</button>
               </span>
             )}
-            <button onClick={() => { setCategory(''); setLanguage('') }} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+            <button onClick={() => { setCategory(''); setLanguage('') }}
+              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
               Clear All
             </button>
           </div>
@@ -157,7 +142,8 @@ export default function BookStore() {
             <div className="text-5xl mb-4">📚</div>
             <p>Abhi koi book available nahi hai.</p>
             {(category || language) && (
-              <button onClick={() => { setCategory(''); setLanguage('') }} className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg">
+              <button onClick={() => { setCategory(''); setLanguage('') }}
+                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg">
                 Sab Books Dekho
               </button>
             )}
@@ -178,10 +164,8 @@ export default function BookStore() {
                   <p className="text-sm text-gray-600 mb-4 line-clamp-2">{book.description}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-orange-500">₹{book.price}</span>
-                    <button
-                      onClick={() => handlePurchase(book)}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600"
-                    >
+                    <button onClick={() => handlePurchase(book)}
+                      className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">
                       Buy Now
                     </button>
                   </div>
