@@ -76,6 +76,11 @@ export default function Login() {
               required
             />
           </div>
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-orange-500 hover:underline">
+              Password bhool gaye? 🔑
+            </Link>
+          </div>
           <button
             type="submit"
             disabled={loading}
