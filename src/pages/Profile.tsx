@@ -14,6 +14,7 @@ export default function Profile() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
     full_name: '',
     mobile: '',
@@ -21,6 +22,7 @@ export default function Profile() {
     city: '',
     bio: '',
     experience: '',
+    profile_photo: '',
   })
 
   useEffect(() => {
@@ -39,8 +41,38 @@ export default function Profile() {
       city: data?.city || '',
       bio: data?.bio || '',
       experience: data?.experience || '',
+      profile_photo: data?.profile_photo || '',
     })
     setLoading(false)
+  }
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${authUser?.id}.${fileExt}`
+
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true })
+
+    if (error) {
+      alert('Photo upload failed!')
+      setUploading(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    setForm({ ...form, profile_photo: publicUrl })
+    await supabase.from('users').update({ profile_photo: publicUrl }).eq('id', authUser?.id)
+    setUploading(false)
+    alert('Photo upload ho gayi! ✅')
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -86,11 +118,24 @@ export default function Profile() {
       <div className="max-w-2xl mx-auto px-4 py-10">
         {/* Profile Header */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 text-center">
-          <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
-            {user?.account_type === 'teacher' ? '👨‍🏫' :
-             user?.account_type === 'seller' ? '🛍️' :
-             user?.account_type === 'admin' ? '👑' : '👨‍🎓'}
+          {/* Photo Upload */}
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            {form.profile_photo ? (
+              <img src={form.profile_photo} alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-4 border-orange-200" />
+            ) : (
+              <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-5xl">
+                {user?.account_type === 'teacher' ? '👨‍🏫' :
+                 user?.account_type === 'seller' ? '🛍️' :
+                 user?.account_type === 'admin' ? '👑' : '👨‍🎓'}
+              </div>
+            )}
+            <label className="absolute bottom-0 right-0 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-orange-600">
+              {uploading ? '⏳' : '📷'}
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+            </label>
           </div>
+
           <h1 className="text-2xl font-bold text-gray-800">{user?.full_name}</h1>
           <p className="text-gray-500 mt-1">{user?.email}</p>
           <span className="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm capitalize font-semibold">
@@ -100,6 +145,7 @@ export default function Profile() {
             {user?.city && <span>📍 {user.city}</span>}
             {user?.state && <span>{user.state}</span>}
           </div>
+          {user?.bio && <p className="text-gray-600 text-sm mt-3">{user.bio}</p>}
         </div>
 
         {/* Edit Profile Form */}
@@ -113,7 +159,6 @@ export default function Profile() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
                 required />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
               <input type="tel" value={form.mobile}
@@ -121,7 +166,6 @@ export default function Profile() {
                 placeholder="10 digit mobile number"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400" />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
@@ -139,7 +183,6 @@ export default function Profile() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400" />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
               <textarea value={form.bio}
@@ -148,7 +191,6 @@ export default function Profile() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
                 rows={3} />
             </div>
-
             {(user?.account_type === 'teacher' || user?.account_type === 'seller') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
@@ -159,7 +201,6 @@ export default function Profile() {
                   rows={2} />
               </div>
             )}
-
             <button type="submit" disabled={saving}
               className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50">
               {saving ? 'Saving...' : '✅ Profile Save Karo'}
