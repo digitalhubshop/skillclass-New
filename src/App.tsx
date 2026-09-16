@@ -11,6 +11,7 @@ import ClassroomDetail from './pages/ClassroomDetail'
 import LiveClass from './pages/LiveClass'
 import Payment from './pages/Payment'
 import Review from './pages/Review'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
       <Route path="/live/:id" element={<LiveClass />} />
       <Route path="/payment/:type/:id" element={<Payment />} />
       <Route path="/review/:classroomId" element={<Review />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   )
 }
