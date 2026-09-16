@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 
 const CATEGORIES = [
@@ -13,17 +13,21 @@ const CATEGORIES = [
 
 export default function StudentDashboard() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [enrollments, setEnrollments] = useState<any[]>([])
   const [purchases, setPurchases] = useState<any[]>([])
   const [classrooms, setClassrooms] = useState<any[]>([])
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') || '')
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || '')
 
   useEffect(() => {
     getUser()
     getClassrooms()
+    if (searchParams.get('search') || searchParams.get('category')) {
+      setActiveTab('explore')
+    }
   }, [])
 
   const getUser = async () => {

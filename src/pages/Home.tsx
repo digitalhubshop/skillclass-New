@@ -1,6 +1,17 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Home() {
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (search.trim()) {
+      navigate(`/student/dashboard?search=${encodeURIComponent(search)}`)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       {/* Header */}
@@ -29,16 +40,18 @@ export default function Home() {
           हर Skill का अपना <span className="text-orange-500">Classroom</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8">सीखें • सिखाएँ • बेचें • कमाएँ</p>
-        <div className="max-w-2xl mx-auto flex gap-3">
+        <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3">
           <input
             type="text"
-            placeholder="आप क्या सीखना चाहते हैं?"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="आप क्या सीखना चाहते हैं? SSC, UPSC, Cooking..."
             className="flex-1 px-6 py-4 rounded-xl border border-gray-200 text-lg focus:outline-none focus:border-orange-400"
           />
-          <button className="px-8 py-4 bg-orange-500 text-white rounded-xl text-lg font-semibold hover:bg-orange-600">
+          <button type="submit" className="px-8 py-4 bg-orange-500 text-white rounded-xl text-lg font-semibold hover:bg-orange-600">
             खोजें
           </button>
-        </div>
+        </form>
       </section>
 
       {/* Categories */}
@@ -67,11 +80,15 @@ export default function Home() {
             { icon: '🗣️', name: 'Language', count: '50+ Classes' },
             { icon: '📸', name: 'Photography', count: '35+ Classes' },
           ].map((cat) => (
-            <div key={cat.name} className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md cursor-pointer transition-all hover:-translate-y-1">
+            <button
+              key={cat.name}
+              onClick={() => navigate(`/student/dashboard?category=${encodeURIComponent(cat.name)}`)}
+              className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md cursor-pointer transition-all hover:-translate-y-1"
+            >
               <div className="text-3xl mb-2">{cat.icon}</div>
               <h3 className="font-semibold text-gray-800 text-sm">{cat.name}</h3>
               <p className="text-xs text-gray-500 mt-1">{cat.count}</p>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -102,9 +119,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">🏛️ Government Exam Preparation</h2>
           <p className="text-blue-100 mb-6">SSC, UPSC, Banking, Railway, Police, TET — सभी Exams की तैयारी एक जगह!</p>
-          <Link to="/register" className="px-8 py-3 bg-white text-blue-700 rounded-xl font-bold hover:bg-blue-50">
+          <button
+            onClick={() => navigate('/student/dashboard?category=SSC Preparation')}
+            className="px-8 py-3 bg-white text-blue-700 rounded-xl font-bold hover:bg-blue-50"
+          >
             अभी Join करें
-          </Link>
+          </button>
         </div>
       </section>
 
