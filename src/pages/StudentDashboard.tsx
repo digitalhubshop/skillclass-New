@@ -69,8 +69,11 @@ export default function StudentDashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Student Dashboard</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-gray-600">👋 {user?.full_name}</span>
+            <button onClick={() => navigate('/profile')} className="px-4 py-2 text-orange-500 border border-orange-200 rounded-lg hover:bg-orange-50">
+              👤 Profile
+            </button>
             <button onClick={handleLogout} className="px-4 py-2 text-red-500 border border-red-200 rounded-lg hover:bg-red-50">Logout</button>
           </div>
         </div>

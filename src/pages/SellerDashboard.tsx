@@ -27,14 +27,8 @@ export default function SellerDashboard() {
   const [payouts, setPayouts] = useState<any[]>([])
   const [showUploadBook, setShowUploadBook] = useState(false)
   const [payoutForm, setPayoutForm] = useState({
-    method: 'upi',
-    upi_id: '',
-    bank_account: '',
-    ifsc: '',
-    bank_name: '',
-    account_holder: '',
-    amount: '',
-    notes: '',
+    method: 'upi', upi_id: '', bank_account: '', ifsc: '',
+    bank_name: '', account_holder: '', amount: '', notes: '',
   })
   const [form, setForm] = useState({
     title: '', author: '', category: '', description: '',
@@ -83,12 +77,10 @@ export default function SellerDashboard() {
   const handlePayoutRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     const { data: { user: authUser } } = await supabase.auth.getUser()
-
     if (parseFloat(payoutForm.amount) > (wallet?.available_balance || 0)) {
       alert('Available balance se zyada amount request nahi kar sakte!')
       return
     }
-
     await supabase.from('payout_requests').insert({
       user_id: authUser?.id,
       amount: parseFloat(payoutForm.amount),
@@ -101,7 +93,6 @@ export default function SellerDashboard() {
       notes: payoutForm.notes,
       status: 'pending',
     })
-
     alert('Payout request submit ho gayi! Admin 1-3 din mein process karega.')
     getPayouts(authUser?.id || '')
     setPayoutForm({ method: 'upi', upi_id: '', bank_account: '', ifsc: '', bank_name: '', account_holder: '', amount: '', notes: '' })
@@ -117,8 +108,11 @@ export default function SellerDashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Seller Dashboard</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-gray-600">👋 {user?.full_name}</span>
+            <button onClick={() => navigate('/profile')} className="px-4 py-2 text-orange-500 border border-orange-200 rounded-lg hover:bg-orange-50">
+              👤 Profile
+            </button>
             <button onClick={handleLogout} className="px-4 py-2 text-red-500 border border-red-200 rounded-lg hover:bg-red-50">Logout</button>
           </div>
         </div>
@@ -212,7 +206,6 @@ export default function SellerDashboard() {
                 <p className="text-sm text-gray-600">Available Balance</p>
                 <p className="text-3xl font-bold text-orange-500">₹{wallet?.available_balance || 0}</p>
               </div>
-
               <form onSubmit={handlePayoutRequest} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
@@ -222,7 +215,6 @@ export default function SellerDashboard() {
                     <option value="bank">🏦 Bank Transfer</option>
                   </select>
                 </div>
-
                 {payoutForm.method === 'upi' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
@@ -231,7 +223,6 @@ export default function SellerDashboard() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   </div>
                 )}
-
                 {payoutForm.method === 'bank' && (
                   <>
                     <div>
@@ -260,7 +251,6 @@ export default function SellerDashboard() {
                     </div>
                   </>
                 )}
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
                   <input type="number" required placeholder="Kitna chahiye?"
@@ -269,14 +259,12 @@ export default function SellerDashboard() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   <p className="text-xs text-gray-400 mt-1">Maximum: ₹{wallet?.available_balance || 0}</p>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
                   <textarea placeholder="Koi aur information..."
                     value={payoutForm.notes} onChange={e => setPayoutForm({...payoutForm, notes: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg" rows={2} />
                 </div>
-
                 <button type="submit" className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
                   💸 Payout Request Karo
                 </button>
