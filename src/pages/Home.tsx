@@ -26,6 +26,7 @@ export default function Home() {
             <Link to="/bookstore" className="hover:text-orange-500">Book Store</Link>
             <Link to="/register?type=teacher" className="hover:text-orange-500">Become a Teacher</Link>
             <Link to="/register?type=seller" className="hover:text-orange-500">Become a Seller</Link>
+            <Link to="/contact" className="hover:text-orange-500">Contact</Link>
           </nav>
           <div className="flex gap-3">
             <Link to="/login" className="px-4 py-2 text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50">Login</Link>
@@ -133,6 +134,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-2xl font-bold text-orange-400 mb-2">🎓 SkillClass</p>
           <p className="text-gray-400">हर Skill का अपना Classroom</p>
+          <div className="flex justify-center gap-6 mt-4 text-sm">
+            <Link to="/terms" className="text-gray-400 hover:text-orange-400">Terms & Conditions</Link>
+            <Link to="/contact" className="text-gray-400 hover:text-orange-400">Contact Us</Link>
+            <Link to="/bookstore" className="text-gray-400 hover:text-orange-400">Book Store</Link>
+          </div>
           <p className="text-gray-500 text-sm mt-4">© 2026 SkillClass. All rights reserved.</p>
         </div>
       </footer>

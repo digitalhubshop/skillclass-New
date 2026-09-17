@@ -14,6 +14,8 @@ import Review from './pages/Review'
 import Profile from './pages/Profile'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Terms from './pages/Terms'
+import Contact from './pages/Contact'
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
       <Route path="/payment/:type/:id" element={<Payment />} />
       <Route path="/review/:classroomId" element={<Review />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/contact" element={<Contact />} />
     </Routes>
   )
 }
