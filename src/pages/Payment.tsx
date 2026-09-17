@@ -47,6 +47,18 @@ export default function Payment() {
     setLoading(false)
   }
 
+  const updateAdminWallet = async (commission: number, type: string) => {
+    const { data: adminWallet } = await supabase.from('admin_wallet').select('*').single()
+    if (adminWallet) {
+      await supabase.from('admin_wallet').update({
+        total_revenue: (adminWallet.total_revenue || 0) + commission,
+        classroom_commission: type === 'classroom' ? (adminWallet.classroom_commission || 0) + commission : adminWallet.classroom_commission,
+        book_commission: type === 'book' ? (adminWallet.book_commission || 0) + commission : adminWallet.book_commission,
+        available_balance: (adminWallet.available_balance || 0) + commission,
+      }).eq('id', adminWallet.id)
+    }
+  }
+
   const handlePayment = async () => {
     if (!window.Razorpay) {
       alert('Payment system load ho raha hai, thoda wait karo!')
@@ -69,6 +81,7 @@ export default function Payment() {
         const { data: { user: authUser } } = await supabase.auth.getUser()
 
         if (type === 'classroom') {
+          // Enrollment create karo
           await supabase.from('enrollments').insert({
             student_id: authUser?.id,
             classroom_id: id,
@@ -76,6 +89,7 @@ export default function Payment() {
             payment_status: 'paid',
           })
 
+          // Teacher wallet update karo
           const { data: existingWallet } = await supabase
             .from('wallets').select('*').eq('user_id', item.teacher_id).single()
 
@@ -91,10 +105,15 @@ export default function Payment() {
               available_balance: receiverAmount,
             })
           }
+
+          // Admin wallet update karo — 10% commission
+          await updateAdminWallet(platformCommission, 'classroom')
+
         } else if (type === 'book') {
           const bookCommission = amount * 0.02
           const sellerAmount = amount - bookCommission
 
+          // Book purchase create karo
           await supabase.from('book_purchases').insert({
             student_id: authUser?.id,
             book_id: id,
@@ -103,6 +122,7 @@ export default function Payment() {
             seller_amount: sellerAmount,
           })
 
+          // Seller wallet update karo
           const { data: existingWallet } = await supabase
             .from('wallets').select('*').eq('user_id', item.seller_id).single()
 
@@ -118,8 +138,12 @@ export default function Payment() {
               available_balance: sellerAmount,
             })
           }
+
+          // Admin wallet update karo — 2% commission
+          await updateAdminWallet(bookCommission, 'book')
         }
 
+        // Payment record save karo
         await supabase.from('payments').insert({
           student_id: authUser?.id,
           amount: amount,
@@ -171,6 +195,7 @@ export default function Payment() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-10">
+        {/* Order Summary */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">📋 Order Summary</h2>
           <div className="p-4 bg-orange-50 rounded-xl mb-4">
@@ -199,6 +224,7 @@ export default function Payment() {
           </div>
         </div>
 
+        {/* Payment Options */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4">💳 Payment Options</h2>
           <div className="grid grid-cols-3 gap-3 mb-4">
@@ -216,6 +242,7 @@ export default function Payment() {
           <p className="text-xs text-gray-400 text-center">Razorpay secure payment — UPI, Card, Net Banking, Wallet sab accept hota hai</p>
         </div>
 
+        {/* Pay Button */}
         <button
           onClick={handlePayment}
           disabled={paying}
