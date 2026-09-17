@@ -1,9 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 
 export default function Home() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [stats, setStats] = useState({
+    totalClasses: 0,
+    totalTeachers: 0,
+    totalStudents: 0,
+    totalBooks: 0,
+  })
+
+  useEffect(() => {
+    getStats()
+  }, [])
+
+  const getStats = async () => {
+    const [classrooms, teachers, students, books] = await Promise.all([
+      supabase.from('classrooms').select('id', { count: 'exact' }).eq('is_approved', true),
+      supabase.from('users').select('id', { count: 'exact' }).eq('account_type', 'teacher'),
+      supabase.from('users').select('id', { count: 'exact' }).eq('account_type', 'student'),
+      supabase.from('books').select('id', { count: 'exact' }).eq('is_approved', true),
+    ])
+    setStats({
+      totalClasses: classrooms.count || 0,
+      totalTeachers: teachers.count || 0,
+      totalStudents: students.count || 0,
+      totalBooks: books.count || 0,
+    })
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +67,7 @@ export default function Home() {
           हर Skill का अपना <span className="text-orange-500">Classroom</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8">सीखें • सिखाएँ • बेचें • कमाएँ</p>
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3">
+        <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3 mb-10">
           <input
             type="text"
             value={search}
@@ -53,6 +79,22 @@ export default function Home() {
             खोजें
           </button>
         </form>
+
+        {/* Real Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          {[
+            { label: 'Live Classes', value: stats.totalClasses, icon: '🏫' },
+            { label: 'Teachers', value: stats.totalTeachers, icon: '👨‍🏫' },
+            { label: 'Students', value: stats.totalStudents, icon: '👨‍🎓' },
+            { label: 'Books', value: stats.totalBooks, icon: '📚' },
+          ].map(item => (
+            <div key={item.label} className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="text-2xl mb-1">{item.icon}</div>
+              <div className="text-2xl font-bold text-orange-500">{item.value}+</div>
+              <div className="text-xs text-gray-500">{item.label}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Categories */}
@@ -60,26 +102,26 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-10">Popular Categories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {[
-            { icon: '🏛️', name: 'SSC Preparation', count: '200+ Classes' },
-            { icon: '🎖️', name: 'UPSC/IAS', count: '150+ Classes' },
-            { icon: '🏦', name: 'Banking Exams', count: '180+ Classes' },
-            { icon: '🚂', name: 'Railway RRB', count: '120+ Classes' },
-            { icon: '🎓', name: 'TET/CTET', count: '90+ Classes' },
-            { icon: '🚔', name: 'Police Exams', count: '110+ Classes' },
-            { icon: '🏥', name: 'NEET', count: '95+ Classes' },
-            { icon: '🔬', name: 'JEE/GATE', count: '85+ Classes' },
-            { icon: '🪖', name: 'Defence/NDA', count: '70+ Classes' },
-            { icon: '📊', name: 'State PCS', count: '130+ Classes' },
-            { icon: '📚', name: 'Academic', count: '120+ Classes' },
-            { icon: '💻', name: 'Computer & Tech', count: '85+ Classes' },
-            { icon: '💄', name: 'Beauty & Makeup', count: '60+ Classes' },
-            { icon: '👗', name: 'Silai & Fashion', count: '45+ Classes' },
-            { icon: '📱', name: 'Digital Marketing', count: '70+ Classes' },
-            { icon: '🍳', name: 'Cooking', count: '55+ Classes' },
-            { icon: '🎨', name: 'Art & Craft', count: '40+ Classes' },
-            { icon: '💼', name: 'Business', count: '65+ Classes' },
-            { icon: '🗣️', name: 'Language', count: '50+ Classes' },
-            { icon: '📸', name: 'Photography', count: '35+ Classes' },
+            { icon: '🏛️', name: 'SSC Preparation' },
+            { icon: '🎖️', name: 'UPSC/IAS' },
+            { icon: '🏦', name: 'Banking Exams' },
+            { icon: '🚂', name: 'Railway RRB' },
+            { icon: '🎓', name: 'TET/CTET' },
+            { icon: '🚔', name: 'Police Exams' },
+            { icon: '🏥', name: 'NEET' },
+            { icon: '🔬', name: 'JEE/GATE' },
+            { icon: '🪖', name: 'Defence/NDA' },
+            { icon: '📊', name: 'State PCS' },
+            { icon: '📚', name: 'Academic' },
+            { icon: '💻', name: 'Computer & Tech' },
+            { icon: '💄', name: 'Beauty & Makeup' },
+            { icon: '👗', name: 'Silai & Fashion' },
+            { icon: '📱', name: 'Digital Marketing' },
+            { icon: '🍳', name: 'Cooking' },
+            { icon: '🎨', name: 'Art & Craft' },
+            { icon: '💼', name: 'Business' },
+            { icon: '🗣️', name: 'Language' },
+            { icon: '📸', name: 'Photography' },
           ].map((cat) => (
             <button
               key={cat.name}
@@ -88,7 +130,6 @@ export default function Home() {
             >
               <div className="text-3xl mb-2">{cat.icon}</div>
               <h3 className="font-semibold text-gray-800 text-sm">{cat.name}</h3>
-              <p className="text-xs text-gray-500 mt-1">{cat.count}</p>
             </button>
           ))}
         </div>
