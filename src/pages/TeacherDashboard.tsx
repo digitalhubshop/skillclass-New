@@ -103,7 +103,10 @@ export default function TeacherDashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Teacher Dashboard</h1>
           <div className="flex items-center gap-3">
-            <span className="text-gray-600">👋 {user?.full_name}</span>
+            <span className="text-gray-600 hidden md:block">👋 {user?.full_name}</span>
+            <button onClick={() => navigate('/messages')} className="px-4 py-2 text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50">
+              💬 Messages
+            </button>
             <button onClick={() => navigate('/profile')} className="px-4 py-2 text-orange-500 border border-orange-200 rounded-lg hover:bg-orange-50">
               👤 Profile
             </button>
@@ -220,53 +223,31 @@ export default function TeacherDashboard() {
                 {payoutForm.method === 'upi' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
-                    <input type="text" required placeholder="yourname@paytm / @ybl / @okicici"
+                    <input type="text" required placeholder="yourname@paytm"
                       value={payoutForm.upi_id} onChange={e => setPayoutForm({...payoutForm, upi_id: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   </div>
                 )}
                 {payoutForm.method === 'bank' && (
                   <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder Name</label>
-                      <input type="text" required placeholder="Apna naam"
-                        value={payoutForm.account_holder} onChange={e => setPayoutForm({...payoutForm, account_holder: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account Number</label>
-                      <input type="text" required placeholder="Account number"
-                        value={payoutForm.bank_account} onChange={e => setPayoutForm({...payoutForm, bank_account: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
-                      <input type="text" required placeholder="IFSC Code"
-                        value={payoutForm.ifsc} onChange={e => setPayoutForm({...payoutForm, ifsc: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
-                      <input type="text" required placeholder="Bank ka naam"
-                        value={payoutForm.bank_name} onChange={e => setPayoutForm({...payoutForm, bank_name: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-                    </div>
+                    <input type="text" required placeholder="Account Holder Name"
+                      value={payoutForm.account_holder} onChange={e => setPayoutForm({...payoutForm, account_holder: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    <input type="text" required placeholder="Bank Account Number"
+                      value={payoutForm.bank_account} onChange={e => setPayoutForm({...payoutForm, bank_account: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    <input type="text" required placeholder="IFSC Code"
+                      value={payoutForm.ifsc} onChange={e => setPayoutForm({...payoutForm, ifsc: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
+                    <input type="text" required placeholder="Bank Name"
+                      value={payoutForm.bank_name} onChange={e => setPayoutForm({...payoutForm, bank_name: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                   </>
                 )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
-                  <input type="number" required placeholder="Kitna chahiye?"
-                    max={wallet?.available_balance || 0}
-                    value={payoutForm.amount} onChange={e => setPayoutForm({...payoutForm, amount: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
-                  <p className="text-xs text-gray-400 mt-1">Maximum: ₹{wallet?.available_balance || 0}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                  <textarea placeholder="Koi aur information..."
-                    value={payoutForm.notes} onChange={e => setPayoutForm({...payoutForm, notes: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg" rows={2} />
-                </div>
+                <input type="number" required placeholder="Amount (₹)"
+                  max={wallet?.available_balance || 0}
+                  value={payoutForm.amount} onChange={e => setPayoutForm({...payoutForm, amount: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg" />
                 <button type="submit" className="w-full py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
                   💸 Payout Request Karo
                 </button>
@@ -293,13 +274,10 @@ export default function TeacherDashboard() {
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           payout.status === 'paid' ? 'bg-green-100 text-green-600' :
                           payout.status === 'rejected' ? 'bg-red-100 text-red-600' :
-                          payout.status === 'processing' ? 'bg-blue-100 text-blue-600' :
                           'bg-yellow-100 text-yellow-600'
                         }`}>
                           {payout.status === 'paid' ? '✅ Paid' :
-                           payout.status === 'rejected' ? '❌ Rejected' :
-                           payout.status === 'processing' ? '⏳ Processing' :
-                           '🕐 Pending'}
+                           payout.status === 'rejected' ? '❌ Rejected' : '🕐 Pending'}
                         </span>
                       </div>
                     </div>
@@ -327,8 +305,8 @@ export default function TeacherDashboard() {
               <textarea required placeholder="Description" value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full px-4 py-3 border rounded-lg" rows={3} />
               <textarea required placeholder="Students Kya Seekhenge?" value={form.what_will_learn} onChange={e => setForm({...form, what_will_learn: e.target.value})} className="w-full px-4 py-3 border rounded-lg" rows={2} />
               <div className="grid grid-cols-2 gap-4">
-                <input required placeholder="Duration (e.g. 3 months)" value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
-                <input required placeholder="Class Days (e.g. Mon, Wed)" value={form.class_days} onChange={e => setForm({...form, class_days: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input required placeholder="Duration" value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
+                <input required placeholder="Class Days" value={form.class_days} onChange={e => setForm({...form, class_days: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <input required type="date" value={form.start_date} onChange={e => setForm({...form, start_date: e.target.value})} className="w-full px-4 py-3 border rounded-lg" />

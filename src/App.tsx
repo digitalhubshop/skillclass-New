@@ -16,6 +16,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
+import Messages from './pages/Messages'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/messages" element={<Messages />} />
     </Routes>
   )
 }

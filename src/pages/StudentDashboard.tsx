@@ -70,7 +70,10 @@ export default function StudentDashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-orange-500">🎓 SkillClass — Student Dashboard</h1>
           <div className="flex items-center gap-3">
-            <span className="text-gray-600">👋 {user?.full_name}</span>
+            <span className="text-gray-600 hidden md:block">👋 {user?.full_name}</span>
+            <button onClick={() => navigate('/messages')} className="px-4 py-2 text-blue-500 border border-blue-200 rounded-lg hover:bg-blue-50">
+              💬 Messages
+            </button>
             <button onClick={() => navigate('/profile')} className="px-4 py-2 text-orange-500 border border-orange-200 rounded-lg hover:bg-orange-50">
               👤 Profile
             </button>
@@ -199,6 +202,10 @@ export default function StudentDashboard() {
                         <button onClick={() => navigate(`/review/${enrollment.classrooms.id}`)}
                           className="w-full py-2 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 font-semibold">
                           ⭐ Review Do
+                        </button>
+                        <button onClick={() => navigate('/messages')}
+                          className="w-full py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 font-semibold">
+                          💬 Teacher ko Message Karo
                         </button>
                       </div>
                     )}
