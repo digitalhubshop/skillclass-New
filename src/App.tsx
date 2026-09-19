@@ -17,6 +17,7 @@ import ResetPassword from './pages/ResetPassword'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import Messages from './pages/Messages'
+import Invite from './pages/Invite'
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/messages" element={<Messages />} />
+      <Route path="/invite" element={<Invite />} />
     </Routes>
   )
 }
